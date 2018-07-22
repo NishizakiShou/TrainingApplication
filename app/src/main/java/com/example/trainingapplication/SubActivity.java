@@ -1,6 +1,7 @@
 package com.example.trainingapplication;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.ImageView;
@@ -13,9 +14,9 @@ public class SubActivity extends AppCompatActivity {
         setContentView(R.layout.activity_sub);
 
         Intent intent = getIntent();
-        int item = intent.getIntExtra("picture", 0);
+        Bitmap picture = (Bitmap)intent.getParcelableExtra("picture");
 
         ImageView imageView = findViewById(R.id.selected_photo);
-        imageView.setImageResource(item);
+        imageView.setImageBitmap(picture);
     }
 }
