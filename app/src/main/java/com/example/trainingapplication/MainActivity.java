@@ -43,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
             }
             mListView = (ListView)findViewById(R.id.list_view);
 
-            SimpleAdapter mAdapter = new SimpleAdapter(this, mPictureList, R.layout.two_line_list_item, new String[]{"fileName", "fileSize"}, new int[]{R.id.text, R.id.text2});
+            SimpleAdapter mAdapter = new SimpleAdapter(this, mPictureList, R.layout.two_line_list_item, new String[]{"fileName", "fileSize"}, new int[]{R.id.fileName, R.id.fileSize});
             mListView.setAdapter(mAdapter);
 
             mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {

@@ -16,15 +16,13 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/item_main"
-            android:text="main_item"
+            android:id="@+id/fileName"
             android:textAppearance="?android:textAppearanceLarge" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/item_sub"
-            android:text="sub_item"
+            android:id="@+id/fileSize"
             android:textAppearance="?android:textAppearanceSmall"
             android:layout_marginLeft="5dp" />
     </LinearLayout>
