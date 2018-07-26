@@ -34,12 +34,12 @@ public class MainActivity extends AppCompatActivity {
 
         if(mFiles != null) {
             for (int i = 0 ; i < mFiles.length ; i++ ) {
-                if (mFiles[i].isFile()) {
+            //    if (mFiles[i].isFile()) {
                     Map<String,String> mItem = new HashMap<>();
                     mItem.put("fileName",removeFileExtension(mFiles[i].getName()));
                     mItem.put("fileSize",mFiles[i].length() + "byte");
                     mPictureList.add(mItem);
-                }
+             //   }
             }
             mListView = (ListView)findViewById(R.id.list_view);
 
@@ -50,8 +50,8 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
                     Intent intent = new Intent(MainActivity.this, SubActivity.class);
-                    Bitmap pictureData = BitmapFactory.decodeFile(mFiles[position].getPath());
-                    intent.putExtra("picture", pictureData);
+                    String selectedPhotoPath = mFiles[position].getPath();
+                    intent.putExtra("sdPath", selectedPhotoPath);
                     startActivity(intent);
                 }
             });
