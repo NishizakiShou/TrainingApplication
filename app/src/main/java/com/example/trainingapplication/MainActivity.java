@@ -6,11 +6,15 @@ import android.graphics.BitmapFactory;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.ContextMenu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
+import android.widget.Toast;
+import android.view.ContextMenu.ContextMenuInfo;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -20,7 +24,7 @@ import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
-    private List<Map<String,String>> mPictureList = new ArrayList<>();
+    private List<Map<String, String>> mPictureList = new ArrayList<>();
     private ListView mListView;
     private File[] mFiles;
 
@@ -34,27 +38,56 @@ public class MainActivity extends AppCompatActivity {
 
         if(mFiles != null) {
             for (int i = 0 ; i < mFiles.length ; i++ ) {
-            //    if (mFiles[i].isFile()) {
-                    Map<String,String> mItem = new HashMap<>();
+                if (mFiles[i].isFile() && mFiles[i].getName().endsWith(".jpeg") || mFiles[i].getName().endsWith(".JPG") || mFiles[i].getName().endsWith(".png") || mFiles[i].getName().endsWith(".gif")) {
+            /*    String thumbnailPath = mFiles[i].getPath();
+                Bitmap thumbnail = BitmapFactory.decodeFile(thumbnailPath);
+                ((ImageView)findViewById(R.id.thumbnail)).setImageBitmap(thumbnail);
+             */   Map<String, String> mItem = new HashMap<>();
                     mItem.put("fileName",removeFileExtension(mFiles[i].getName()));
                     mItem.put("fileSize",mFiles[i].length() + "byte");
+
                     mPictureList.add(mItem);
-             //   }
+                }
             }
             mListView = (ListView)findViewById(R.id.list_view);
 
             SimpleAdapter mAdapter = new SimpleAdapter(this, mPictureList, R.layout.two_line_list_item, new String[]{"fileName", "fileSize"}, new int[]{R.id.fileName, R.id.fileSize});
             mListView.setAdapter(mAdapter);
 
+            registerForContextMenu(mListView);
+
             mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+                    if(view.getId() == R.id.context_menu_button) {
+                        openContextMenu(mListView);
+                    }
                     Intent intent = new Intent(MainActivity.this, SubActivity.class);
                     String selectedPhotoPath = mFiles[position].getPath();
                     intent.putExtra("sdPath", selectedPhotoPath);
                     startActivity(intent);
                 }
             });
+        }
+    }
+
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View view, ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, view, menuInfo);
+
+        menu.setHeaderTitle("MENU");
+        menu.add(0, R.id.delete_menu, 0, "Delete");
+    }
+
+    public boolean onContextItemSelected(MenuItem item) {
+        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo)item.getMenuInfo();
+
+        switch (item.getItemId()) {
+            case R.id.delete_menu:
+
+                return true;
+                default:
+                    return super.onContextItemSelected(item);
         }
     }
 
