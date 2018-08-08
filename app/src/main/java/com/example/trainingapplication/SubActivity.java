@@ -1,9 +1,14 @@
 package com.example.trainingapplication;
 
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.support.v4.app.FragmentActivity;
 import android.view.ContextMenu;
 import android.view.MenuItem;
@@ -12,6 +17,12 @@ import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.TextView;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 public class SubActivity extends FragmentActivity implements OnClickListener{
 
@@ -19,6 +30,7 @@ public class SubActivity extends FragmentActivity implements OnClickListener{
     private Button mUndoBtn;
     private Button mRedoBtn;
     private Button mResetBtn;
+    private String mFilePath;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,11 +38,14 @@ public class SubActivity extends FragmentActivity implements OnClickListener{
         setContentView(R.layout.activity_sub);
 
         Intent intent = getIntent();
-        String selectedPhotoPath = intent.getStringExtra("sdPath");
-        Bitmap picture = BitmapFactory.decodeFile(selectedPhotoPath);
+        mFilePath = intent.getStringExtra("sdPath");
+        Bitmap picture = BitmapFactory.decodeFile(mFilePath);
         ((ImageView)findViewById(R.id.selected_photo)).setImageBitmap(picture);
+        String selectedFileName = intent.getStringExtra("fileName");
+        TextView textView = (TextView)findViewById(R.id.subHeader);
+        textView.setText(selectedFileName);
 
-        mCanvasView = (DrawSurfaceView) findViewById(R.id.canvasView);
+        mCanvasView = (DrawSurfaceView)findViewById(R.id.canvasView);
 
         mUndoBtn = (Button) findViewById(R.id.undoBtn);
         mUndoBtn.setOnClickListener(this);
@@ -70,10 +85,40 @@ public class SubActivity extends FragmentActivity implements OnClickListener{
 
         switch (item.getItemId()) {
             case R.id.save_menu:
+                String filePath = Environment.getExternalStorageDirectory().getPath();
+                File file = new File(filePath);
+                file.getParentFile().mkdir();
+                try {
+                    InputStream inputStream = getResources().getAssets().open(mFilePath);
+                    FileOutputStream output = new FileOutputStream(filePath);
 
+                    int DEFAULT_BUFFER_SIZE = 10240 * 4;
+                    byte buf[] = new byte[DEFAULT_BUFFER_SIZE];
+                    int len;
+                    while ((len = inputStream.read(buf)) != -1) {
+                        output.write(buf, 0 ,len);
+                    }
+                    output.flush();
+                    output.close();
+                    inputStream.close();
+
+                    registerDatabase(mFilePath);
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 return true;
             default:
                 return super.onContextItemSelected(item);
         }
+    }
+
+    public void registerDatabase(String file) {
+        ContentValues contentValues = new ContentValues();
+        ContentResolver contentResolver = SubActivity.this.getContentResolver();
+        contentValues.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
+        contentValues.put("_data", file);
+        contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues);
+
     }
 }
