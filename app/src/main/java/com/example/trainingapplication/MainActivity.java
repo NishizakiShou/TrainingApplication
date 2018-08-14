@@ -15,21 +15,16 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.SimpleAdapter;
-import android.widget.Toast;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.View.OnClickListener;
 
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
-    private List<Map<String, Object>> mPictureList = new ArrayList<>();
     private ListView mListView;
     private File[] mFiles;
     private Button mMenuButton;
@@ -38,6 +33,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        mListView = (ListView)findViewById(R.id.list_view);
+
+        ArrayList<ListItem> listItems = new ArrayList<>();
 
         String sdPath = Environment.getExternalStorageDirectory().getPath();
         FilenameFilter filter = new FilenameFilter() {
@@ -56,19 +55,19 @@ public class MainActivity extends AppCompatActivity {
             for (int i = 0 ; i < mFiles.length ; i++ ) {
                 String thumbnailPath = mFiles[i].getPath();
                 Bitmap thumbnailBm = BitmapFactory.decodeFile(thumbnailPath);
-                ImageView thumbnail = new ImageView(this);
-                thumbnail.setImageBitmap(thumbnailBm);
-                Map<String, Object> mItem = new HashMap<>();
-                mItem.put("thumbnail", thumbnail);
-                mItem.put("fileName",removeFileExtension(mFiles[i].getName()));
-                mItem.put("fileSize",mFiles[i].length() + "byte");
 
-                mPictureList.add(mItem);
+                String fileName = removeFileExtension(mFiles[i].getName());
+
+                String fileSize = mFiles[i].length() + "byte";
+
+                ListItem item = new ListItem(thumbnailBm, fileName, fileSize);
+
+                listItems.add(item);
             }
-            mListView = (ListView)findViewById(R.id.list_view);
 
-            SimpleAdapter mAdapter = new SimpleAdapter(this, mPictureList, R.layout.two_line_list_item, new String[]{"thumbnail", "fileName", "fileSize"}, new int[]{R.id.thumbnail, R.id.fileName, R.id.fileSize});
-            mListView.setAdapter(mAdapter);
+            ImageArrayAdapter adapter = new ImageArrayAdapter(this, R.layout.two_line_list_item, listItems);
+
+            mListView.setAdapter(adapter);
 
             registerForContextMenu(mListView);
 
@@ -89,12 +88,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onCreateContextMenu(ContextMenu menu, View view, ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, view, menuInfo);
-
-        AdapterView.AdapterContextMenuInfo adapterInfo = (AdapterView.AdapterContextMenuInfo)menuInfo;
-        ListView listView = (ListView)view;
-        Map pictureList = (Map)listView.getItemAtPosition(adapterInfo.position);
-        listView.setTag(listView.getItemAtPosition(adapterInfo.position));
-        menu.setHeaderTitle((String)pictureList.get("fileName"));
+        menu.setHeaderTitle("MENU");
         menu.add(0, R.id.delete_menu, 0, "Delete");
     }
 
@@ -112,13 +106,21 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * ファイル名から拡張子を除いた名前を取得
+     * @param fileName　ファイル名
+     * @return 拡張子を除いたファイル名
+     */
     public String removeFileExtension(String fileName) {
+        //文字列の末尾から検索して初めに見つかった位置のインデックス(見つからなければ「－1」が返される)
         int lastDotPos = fileName.lastIndexOf('.');
+
         if(lastDotPos == -1) {
             return fileName;
         }else if(lastDotPos == 0) {
             return fileName;
         }else {
+            // 拡張子を除いたファイル名を取得(第一引数:開始インデックス[この値を含む]、第二引数:終了インデックス[この値を含まない])
             return fileName.substring(0,lastDotPos);
         }
     }

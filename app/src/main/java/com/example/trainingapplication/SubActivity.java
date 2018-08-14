@@ -87,7 +87,6 @@ public class SubActivity extends FragmentActivity implements OnClickListener{
             case R.id.save_menu:
                 String filePath = Environment.getExternalStorageDirectory().getPath();
                 File file = new File(filePath);
-                file.getParentFile().mkdir();
                 try {
                     InputStream inputStream = getResources().getAssets().open(mFilePath);
                     FileOutputStream output = new FileOutputStream(filePath);

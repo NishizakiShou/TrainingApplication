@@ -1,5 +1,6 @@
 package com.example.trainingapplication;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
@@ -9,12 +10,16 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PixelFormat;
 import android.graphics.PorterDuff.Mode;
+import android.os.Environment;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceHolder.Callback;
 import android.view.SurfaceView;
+import android.widget.Toast;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
@@ -26,6 +31,7 @@ public class DrawSurfaceView extends SurfaceView implements Callback {
     private Canvas mLastDrawCanvas;
     private Deque<Path> mUndoStack = new ArrayDeque<Path>();
     private Deque<Path> mRedoStack = new ArrayDeque<Path>();
+    private Activity _context;
 
     public DrawSurfaceView(Context context) {
         super(context);
