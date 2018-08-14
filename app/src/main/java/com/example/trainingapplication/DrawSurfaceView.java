@@ -1,6 +1,5 @@
 package com.example.trainingapplication;
 
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
@@ -19,7 +18,9 @@ import android.view.SurfaceView;
 import android.widget.Toast;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
@@ -31,7 +32,6 @@ public class DrawSurfaceView extends SurfaceView implements Callback {
     private Canvas mLastDrawCanvas;
     private Deque<Path> mUndoStack = new ArrayDeque<Path>();
     private Deque<Path> mRedoStack = new ArrayDeque<Path>();
-    private Activity _context;
 
     public DrawSurfaceView(Context context) {
         super(context);
@@ -198,5 +198,25 @@ public class DrawSurfaceView extends SurfaceView implements Callback {
         Canvas canvas = mHolder.lockCanvas();
         canvas.drawColor(0, Mode.CLEAR);
         mHolder.unlockCanvasAndPost(canvas);
+    }
+
+    public void saveToFile() {
+        File file = new File(Environment.getExternalStorageDirectory().getPath());
+
+        String AttachName = file.getAbsolutePath() + "/";
+        AttachName += System.currentTimeMillis() + ".JPG";
+        File saveFile = new File(AttachName);
+        while (saveFile.exists()) {
+            AttachName = file.getAbsolutePath() + "/" + System.currentTimeMillis() + "JPG";
+            saveFile = new File(AttachName);
+        }
+        try {
+            FileOutputStream outputStream = new FileOutputStream(AttachName);
+            mLastDrawBitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
+            outputStream.flush();
+            outputStream.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

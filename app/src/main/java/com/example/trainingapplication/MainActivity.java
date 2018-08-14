@@ -89,7 +89,8 @@ public class MainActivity extends AppCompatActivity {
     public void onCreateContextMenu(ContextMenu menu, View view, ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, view, menuInfo);
         menu.setHeaderTitle(R.string.context_title);
-        menu.add(0, R.id.delete_menu, 0, "Delete");
+        // 第一引数:グループID、第二引数:アイテムID、第三引数:メニューの表示順、第四引数:メニューに表示する文言
+        menu.add(0, R.id.delete_menu, 0, R.string.delete_menu);
     }
 
     public boolean onContextItemSelected(MenuItem item) {
