@@ -31,6 +31,7 @@ public class SubActivity extends FragmentActivity implements OnClickListener{
     private Button mRedoBtn;
     private Button mResetBtn;
     private String mFilePath;
+    private Bitmap mPicture;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,8 +40,8 @@ public class SubActivity extends FragmentActivity implements OnClickListener{
 
         Intent intent = getIntent();
         mFilePath = intent.getStringExtra("sdPath");
-        Bitmap picture = BitmapFactory.decodeFile(mFilePath);
-        ((ImageView)findViewById(R.id.selected_photo)).setImageBitmap(picture);
+        mPicture = BitmapFactory.decodeFile(mFilePath);
+        ((ImageView)findViewById(R.id.selected_photo)).setImageBitmap(mPicture);
         String selectedFileName = intent.getStringExtra("fileName");
         TextView textView = (TextView)findViewById(R.id.subHeader);
         textView.setText(selectedFileName);
@@ -76,7 +77,7 @@ public class SubActivity extends FragmentActivity implements OnClickListener{
     public void onCreateContextMenu(ContextMenu menu, View view, ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, view, menuInfo);
 
-        menu.setHeaderTitle("MENU");
+        menu.setHeaderTitle(R.string.context_title);
         menu.add(0, R.id.save_menu, 0, "Save");
     }
 
@@ -85,23 +86,21 @@ public class SubActivity extends FragmentActivity implements OnClickListener{
 
         switch (item.getItemId()) {
             case R.id.save_menu:
-                String filePath = Environment.getExternalStorageDirectory().getPath();
-                File file = new File(filePath);
+                File file = new File(Environment.getExternalStorageDirectory().getPath());
+                String filePath = file.getAbsolutePath() + "/";
+                filePath += System.currentTimeMillis() + ".JPG";
+                File saveFile = new File(filePath);
+                while (saveFile.exists()) {
+                    filePath = file.getAbsolutePath() + "/" + System.currentTimeMillis() + "JPG";
+                    saveFile = new File(filePath);
+                }
                 try {
-                    InputStream inputStream = getResources().getAssets().open(mFilePath);
-                    FileOutputStream output = new FileOutputStream(filePath);
+                    FileOutputStream outputStream = new FileOutputStream(filePath);
+                    mPicture.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
+                    outputStream.flush();
+                    outputStream.close();
 
-                    int DEFAULT_BUFFER_SIZE = 10240 * 4;
-                    byte buf[] = new byte[DEFAULT_BUFFER_SIZE];
-                    int len;
-                    while ((len = inputStream.read(buf)) != -1) {
-                        output.write(buf, 0 ,len);
-                    }
-                    output.flush();
-                    output.close();
-                    inputStream.close();
-
-                    registerDatabase(mFilePath);
+                    registerDatabase(filePath);
 
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -115,7 +114,7 @@ public class SubActivity extends FragmentActivity implements OnClickListener{
     public void registerDatabase(String file) {
         ContentValues contentValues = new ContentValues();
         ContentResolver contentResolver = SubActivity.this.getContentResolver();
-        contentValues.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
+        contentValues.put(MediaStore.Images.Media.MIME_TYPE, System.currentTimeMillis() + "/JPG");
         contentValues.put("_data", file);
         contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues);
 

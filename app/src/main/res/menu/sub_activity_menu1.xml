@@ -2,6 +2,6 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/save_menu"
-        android:title="Save">
+        android:title="@string/save_menu">
     </item>
 </menu>

@@ -1,3 +1,12 @@
 <resources>
     <string name="app_name">Training Application</string>
+    <string name="main_menu">menu</string>
+    <string name="context_title">MENU</string>
+    <string name="delete_menu">Delete</string>
+    <string name="save_menu">Save</string>
+    <string name="sub_header">Title</string>
+    <string name="sub_menu">menu</string>
+    <string name="undo_menu">undo</string>
+    <string name="redo_menu">redo</string>
+    <string name="reset_menu">reset</string>
 </resources>

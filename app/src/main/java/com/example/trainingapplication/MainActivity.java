@@ -88,7 +88,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onCreateContextMenu(ContextMenu menu, View view, ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, view, menuInfo);
-        menu.setHeaderTitle("MENU");
+        menu.setHeaderTitle(R.string.context_title);
         menu.add(0, R.id.delete_menu, 0, "Delete");
     }
 
