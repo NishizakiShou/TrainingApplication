@@ -9,7 +9,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:text="@string/sub_header"
-        android:textSize="110px"/>
+        android:textSize="90px"/>
 
     <Button
         android:id="@+id/sub_menu_button"
@@ -19,20 +19,12 @@
         android:layout_alignParentRight="true"
         android:text="@string/sub_menu"/>
 
-
     <com.example.trainingapplication.DrawSurfaceView
         android:id="@+id/canvasView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@+id/undoBtn"
-        android:layout_below="@+id/subHeader"/>
-
-    <ImageView
-        android:id="@+id/selected_photo"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_above="@+id/undoBtn"
-        android:layout_below="@+id/subHeader"/>
+        android:layout_below="@+id/sub_menu_button"/>
 
     <Button
         android:id="@+id/undoBtn"

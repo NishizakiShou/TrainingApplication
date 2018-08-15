@@ -3,6 +3,7 @@ package com.example.trainingapplication;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -11,6 +12,7 @@ import android.graphics.PixelFormat;
 import android.graphics.PorterDuff.Mode;
 import android.os.Environment;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceHolder.Callback;
@@ -28,6 +30,7 @@ public class DrawSurfaceView extends SurfaceView implements Callback {
     private SurfaceHolder mHolder;
     private Paint mPaint;
     private Path mPath;
+    private Bitmap mPictureBitmap = null;
     private Bitmap mLastDrawBitmap;
     private Canvas mLastDrawCanvas;
     private Deque<Path> mUndoStack = new ArrayDeque<Path>();
@@ -66,6 +69,9 @@ public class DrawSurfaceView extends SurfaceView implements Callback {
     public void surfaceCreated(SurfaceHolder holder) {
         // 描画状態を保持するBitmapを生成します。
         clearLastDrawBitmap();
+        Canvas canvas = mHolder.lockCanvas();
+        drawPicture(canvas);
+        mHolder.unlockCanvasAndPost(canvas);
     }
 
     @Override
@@ -80,7 +86,8 @@ public class DrawSurfaceView extends SurfaceView implements Callback {
 
     private void clearLastDrawBitmap() {
         if (mLastDrawBitmap == null) {
-            mLastDrawBitmap = Bitmap.createBitmap(getWidth(), getHeight(),
+            mPictureBitmap = Bitmap.createScaledBitmap(mPictureBitmap, 1050, 1500, false);
+            mLastDrawBitmap = Bitmap.createBitmap(mPictureBitmap.getWidth(), mPictureBitmap.getHeight(),
                     Config.ARGB_8888);
         }
 
@@ -146,6 +153,17 @@ public class DrawSurfaceView extends SurfaceView implements Callback {
         mHolder.unlockCanvasAndPost(canvas);
     }
 
+    public void drawPicture(Canvas canvas) {
+        mPictureBitmap = Bitmap.createScaledBitmap(mPictureBitmap, 1050, 1500, false);
+        canvas.drawBitmap(mLastDrawBitmap, 0, 0, null);
+        canvas.drawBitmap(mPictureBitmap, 0, 0, mPaint);
+        mLastDrawCanvas.drawBitmap(mPictureBitmap, 0, 0, mPaint);
+    }
+
+    public void setPictureView(String filePath) {
+        mPictureBitmap = BitmapFactory.decodeFile(filePath);
+    }
+
     public void undo() {
         if (mUndoStack.isEmpty()) {
             return;
@@ -164,6 +182,8 @@ public class DrawSurfaceView extends SurfaceView implements Callback {
         // 描画状態を保持するBitmapをクリアします。
         clearLastDrawBitmap();
 
+        drawPicture(canvas);
+
         // パスを描画します。
         for (Path path : mUndoStack) {
             canvas.drawPath(path, mPaint);
@@ -172,6 +192,8 @@ public class DrawSurfaceView extends SurfaceView implements Callback {
 
         // ロックを外します。
         mHolder.unlockCanvasAndPost(canvas);
+
+
     }
 
     public void redo() {
@@ -197,22 +219,25 @@ public class DrawSurfaceView extends SurfaceView implements Callback {
 
         Canvas canvas = mHolder.lockCanvas();
         canvas.drawColor(0, Mode.CLEAR);
+        drawPicture(canvas);
         mHolder.unlockCanvasAndPost(canvas);
+
+
     }
 
     public void saveToFile() {
         File file = new File(Environment.getExternalStorageDirectory().getPath());
 
         String AttachName = file.getAbsolutePath() + "/";
-        AttachName += System.currentTimeMillis() + ".JPG";
+        AttachName += System.currentTimeMillis() + ".png";
         File saveFile = new File(AttachName);
         while (saveFile.exists()) {
-            AttachName = file.getAbsolutePath() + "/" + System.currentTimeMillis() + "JPG";
+            AttachName = file.getAbsolutePath() + "/" + System.currentTimeMillis() + "png";
             saveFile = new File(AttachName);
         }
         try {
             FileOutputStream outputStream = new FileOutputStream(AttachName);
-            mLastDrawBitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
+            mLastDrawBitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
             outputStream.flush();
             outputStream.close();
         } catch (Exception e) {

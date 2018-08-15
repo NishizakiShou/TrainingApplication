@@ -6,7 +6,6 @@ import android.graphics.BitmapFactory;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.ContextMenu;
 import android.view.MenuItem;
 import android.view.View;
@@ -21,7 +20,6 @@ import android.view.View.OnClickListener;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.ArrayList;
-import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -42,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
         FilenameFilter filter = new FilenameFilter() {
             @Override
             public boolean accept(File file, String s) {
-                if (s.endsWith(".jpeg") || s.endsWith(".JPG")) {
+                if (s.endsWith(".jpeg") || s.endsWith(".JPG") || s.endsWith(".jpg") || s.endsWith(".PNG") || s.endsWith(".png")) {
                     return true;
                 }else {
                     return false;
@@ -69,6 +67,7 @@ public class MainActivity extends AppCompatActivity {
 
             mListView.setAdapter(adapter);
 
+            mMenuButton = findViewById(R.id.context_menu_button);
             registerForContextMenu(mListView);
 
             mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
