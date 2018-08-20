@@ -225,22 +225,33 @@ public class DrawSurfaceView extends SurfaceView implements Callback {
 
     }
 
+    // 編集した画像の保存処理
     public void saveToFile() {
+        // 保存するディレクトリを設定
         File file = new File(Environment.getExternalStorageDirectory().getPath());
 
+        // 保存するためのファイル名を生成する
+        // 絶対パス名と、保存処理時の現在時刻を合わせたPNG形式のファイル名を生成
         String AttachName = file.getAbsolutePath() + "/";
         AttachName += System.currentTimeMillis() + ".png";
         File saveFile = new File(AttachName);
+        // 保存するファイル名がすでに存在していた場合、ファイル名を変更
         while (saveFile.exists()) {
-            AttachName = file.getAbsolutePath() + "/" + System.currentTimeMillis() + "png";
+            AttachName = file.getAbsolutePath() + "/" + System.currentTimeMillis() + "a.png";
             saveFile = new File(AttachName);
         }
         try {
+            // Fileにデータを書き込む
+            // ファイルに書き込むための出力ストリームを生成(プログラムからファイルにデータを書き込む)
             FileOutputStream outputStream = new FileOutputStream(AttachName);
+            // 作成したBitmapからPNGファイルを作成する。(第一引数：作成するフォーマット形式、第二引数：画質[0～100、0:低画質、100:高画質]、第三引数：ファイル出力用のストリーム)
             mLastDrawBitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
+            // バッファリングされていたすべての出力バイトを強制的に書き込む
             outputStream.flush();
+            // 出力ストリームを閉じ、このストリームに関するすべてのシステムリソースを開放する
             outputStream.close();
         } catch (Exception e) {
+            // 例外情報を標準エラー出力に出力
             e.printStackTrace();
         }
     }

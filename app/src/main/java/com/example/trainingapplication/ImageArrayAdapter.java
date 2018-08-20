@@ -12,9 +12,9 @@ import java.util.List;
 
 public class ImageArrayAdapter extends ArrayAdapter<ListItem> {
 
-    private int resourceId;
-    private List<ListItem> items;
-    private LayoutInflater inflater;
+    private int mResourceId;
+    private List<ListItem> mItems;
+    private LayoutInflater mInflater;
 
     /**
      * コンストラクタ
@@ -25,21 +25,25 @@ public class ImageArrayAdapter extends ArrayAdapter<ListItem> {
     public ImageArrayAdapter(Context context, int resourceId, List<ListItem> items) {
         super(context, resourceId, items);
 
-        this.resourceId = resourceId;
-        this.items = items;
-        this.inflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        this.mResourceId = resourceId;
+        this.mItems = items;
+        // システムサービスからLayoutInflaterを取得(指定したxmlレイアウトリソースを利用できるようになる)
+        this.mInflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     }
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         View view;
+        // 再利用可能なView(convertView)があるか判断する。あればconvertViewをViewにする。
         if (convertView != null) {
             view = convertView;
         } else {
-            view = this.inflater.inflate(this.resourceId, null);
+            // 第一引数:リソースID、第二引数:リソースの親となるレイアウト
+            view = this.mInflater.inflate(this.mResourceId, null);
         }
 
-        ListItem item = this.items.get(position);
+        // 渡された位置(position)からデータを取得する
+        ListItem item = this.mItems.get(position);
 
         //サムネイルをセット
         ImageView thumbnail = (ImageView)view.findViewById(R.id.thumbnail);

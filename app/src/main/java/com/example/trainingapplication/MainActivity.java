@@ -34,45 +34,54 @@ public class MainActivity extends AppCompatActivity {
 
         mListView = (ListView)findViewById(R.id.list_view);
 
+        // ListItemの要素を保存するArrayListを生成
         ArrayList<ListItem> listItems = new ArrayList<>();
 
+        // 内部ストレージ直下のパスを取得
         String sdPath = Environment.getExternalStorageDirectory().getPath();
+
+        // mFilesに入れるファイルのファイル名にフィルターをかけて、特定のファイル名のみをtrueで返す
         FilenameFilter filter = new FilenameFilter() {
             @Override
-            public boolean accept(File file, String s) {
-                if (s.endsWith(".jpeg") || s.endsWith(".JPG") || s.endsWith(".jpg") || s.endsWith(".PNG") || s.endsWith(".png")) {
+            public boolean accept(File dir, String fileName) {
+                if (fileName.endsWith(".jpeg") || fileName.endsWith(".JPG") || fileName.endsWith(".jpg") || fileName.endsWith(".PNG") || fileName.endsWith(".png")) {
                     return true;
                 }else {
                     return false;
                 }
             }
         };
+        // 内部ストレージ直下の、フィルターをかけた特定のファイル一覧を取得
         mFiles = new File(sdPath).listFiles(filter);
 
+        // ListItemに保存するための要素を取得して、ListItemに保存
         if(mFiles != null) {
             for (int i = 0 ; i < mFiles.length ; i++ ) {
+                // サムネイル用の画像をビットマップに変換
                 String thumbnailPath = mFiles[i].getPath();
                 Bitmap thumbnailBm = BitmapFactory.decodeFile(thumbnailPath);
-
+                // 拡張子を除いたファイル名を取得
                 String fileName = removeFileExtension(mFiles[i].getName());
-
+                // ファイルサイズを取得
                 String fileSize = mFiles[i].length() + "byte";
-
+                // ListItemに要素を保存
                 ListItem item = new ListItem(thumbnailBm, fileName, fileSize);
-
                 listItems.add(item);
             }
 
+            // ListViewにListItemを表示させるためのアダプターを生成
             ImageArrayAdapter adapter = new ImageArrayAdapter(this, R.layout.two_line_list_item, listItems);
-
             mListView.setAdapter(adapter);
 
             mMenuButton = findViewById(R.id.context_menu_button);
+            // コンテキストメニューを生成
             registerForContextMenu(mListView);
 
+            // リストビューの項目が押されたときの処理
             mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+                    // インテントを生成して、押下位置の画像ファイルパスとファイル名をサブアクティビィティに渡して画面遷移する
                     Intent intent = new Intent(MainActivity.this, SubActivity.class);
                     String selectedPhotoPath = mFiles[position].getPath();
                     String selectedFileName = mFiles[position].getName();
@@ -84,19 +93,24 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    // コンテキストメニューの内容
     @Override
     public void onCreateContextMenu(ContextMenu menu, View view, ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, view, menuInfo);
+        // メニュータイトルと、メニュー項目を設定
+        // メニュータイトルを設定
         menu.setHeaderTitle(R.string.context_title);
-        // 第一引数:グループID、第二引数:アイテムID、第三引数:メニューの表示順、第四引数:メニューに表示する文言
+        // メニュー項目を設定。(第一引数:グループID、第二引数:アイテムID、第三引数:メニューの表示順、第四引数:メニューに表示する文言)
         menu.add(0, R.id.delete_menu, 0, R.string.delete_menu);
     }
 
+    // コンテキストメニュー項目押下時の処理
     public boolean onContextItemSelected(MenuItem item) {
         AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo)item.getMenuInfo();
 
         switch (item.getItemId()) {
             case R.id.delete_menu:
+                // 選択したファイルを削除
                 String selectedPhotoPath = mFiles[info.position].getPath();
                 File file = new File(selectedPhotoPath);
                 file.delete();
