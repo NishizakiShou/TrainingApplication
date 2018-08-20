@@ -12,17 +12,13 @@ import android.graphics.PixelFormat;
 import android.graphics.PorterDuff.Mode;
 import android.os.Environment;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceHolder.Callback;
 import android.view.SurfaceView;
-import android.widget.Toast;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
@@ -38,39 +34,52 @@ public class DrawSurfaceView extends SurfaceView implements Callback {
 
     public DrawSurfaceView(Context context) {
         super(context);
+        // 描画の設定を行う
         init();
     }
 
     public DrawSurfaceView(Context context, AttributeSet attrs) {
         super(context, attrs);
+        // 描画の設定を行う
         init();
     }
 
     private void init() {
+        // 一時的に画面を格納するホルダーを取得する
         mHolder = getHolder();
 
-        // 透過します。
+        // SurfaceViewの背景を透過させる
+        // SurfaceViewを画面の最前面に表示させる
         setZOrderOnTop(true);
+        // 背景に半透明を設定する
         mHolder.setFormat(PixelFormat.TRANSPARENT);
 
-        // コールバックを設定します。
+        // コールバックを設定する
         mHolder.addCallback(this);
 
-        // ペイントを設定します。
+        // ペイントを設定する
         mPaint = new Paint();
+        // 描画色を設定
         mPaint.setColor(Color.BLACK);
+        // 描画スタイルを設定(STROKE：線のみ描画 FILL：塗りつぶしのみ描画)
         mPaint.setStyle(Paint.Style.STROKE);
+        // 描画した線の先端の設定(ROUND：先端を丸く)
         mPaint.setStrokeCap(Paint.Cap.ROUND);
+        // 描画をなめらかに見せる設定
         mPaint.setAntiAlias(true);
+        // 描画する線の太さを設定
         mPaint.setStrokeWidth(6);
     }
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
-        // 描画状態を保持するBitmapを生成します。
+        // 描画状態を保持するBitmapを生成
+        // Bitmapを初期化する
         clearLastDrawBitmap();
+        // キャンバスのインスタンスを取得(lockCanvas：あるスレッドが描画処理を行っている間ほかのスレッドからの描画を排他する)
         Canvas canvas = mHolder.lockCanvas();
         drawPicture(canvas);
+        // 画面のロックを解除して表示を更新
         mHolder.unlockCanvasAndPost(canvas);
     }
 
@@ -81,20 +90,25 @@ public class DrawSurfaceView extends SurfaceView implements Callback {
 
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
+        // Bitmapオブジェクトのメモリ開放処理
         mLastDrawBitmap.recycle();
     }
 
     private void clearLastDrawBitmap() {
+        // Bitmapが用意されていなかった場合にはビットマップを作成する
         if (mLastDrawBitmap == null) {
+            //　選択した画像のビットマップをリサイズしてセット(第一引数：リサイズするBitmap、第二引数：変更後の横幅、第三引数：変更後の縦幅、第四引数：画質をなめらかにするか)
             mPictureBitmap = Bitmap.createScaledBitmap(mPictureBitmap, 1050, 1500, false);
+            // リサイズした画像と同じ大きさで、描画するビットマップを作成(第三引数：ARGB_8888 = ARGBで、0～256段階の色を使用 [ARGB_4444ならば、0～127段階の色を使用、Aは0が透明で255が完全な不透明])
             mLastDrawBitmap = Bitmap.createBitmap(mPictureBitmap.getWidth(), mPictureBitmap.getHeight(),
                     Config.ARGB_8888);
         }
 
+        // Canvasが用意されていなかった場合にはCanvasを作成する
         if (mLastDrawCanvas == null) {
             mLastDrawCanvas = new Canvas(mLastDrawBitmap);
         }
-
+        // Canvas全体を透明色塗りつぶす
         mLastDrawCanvas.drawColor(0, Mode.CLEAR);
     }
 
@@ -102,17 +116,17 @@ public class DrawSurfaceView extends SurfaceView implements Callback {
     public boolean onTouchEvent(MotionEvent event) {
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
+                // 押下位置のx軸とy軸を渡す
                 onTouchDown(event.getX(), event.getY());
                 break;
-
             case MotionEvent.ACTION_MOVE:
+                // 移動した位置のx軸とy軸を渡す
                 onTouchMove(event.getX(), event.getY());
                 break;
-
             case MotionEvent.ACTION_UP:
+                // 指を離した位置のx軸とy軸を渡す
                 onTouchUp(event.getX(), event.getY());
                 break;
-
             default:
         }
         return true;
@@ -120,46 +134,55 @@ public class DrawSurfaceView extends SurfaceView implements Callback {
 
     private void onTouchDown(float x, float y) {
         mPath = new Path();
+        // パスの開始地点を決定
         mPath.moveTo(x, y);
     }
 
     private void onTouchMove(float x, float y) {
+        // メソッドで描画するポイントを追加
         mPath.lineTo(x, y);
         drawLine(mPath);
     }
 
     private void onTouchUp(float x, float y) {
+        // 指を離した位置を追加
         mPath.lineTo(x, y);
         drawLine(mPath);
+        // Canvasに、押下してから離すまでのPathを描画する
         mLastDrawCanvas.drawPath(mPath, mPaint);
+        // undoにパスのデータを追加する
         mUndoStack.addLast(mPath);
+        // redoのデータをクリアする
         mRedoStack.clear();
     }
 
     private void drawLine(Path path) {
-        // ロックしてキャンバスを取得します。
+        // ロックしてキャンバスを取得する
         Canvas canvas = mHolder.lockCanvas();
 
-        // キャンバスをクリアします。
+        // キャンバスをクリアする
         canvas.drawColor(0, Mode.CLEAR);
 
-        // 前回描画したビットマップをキャンバスに描画します。
+        // 前回描画したビットマップをキャンバスに描画する
         canvas.drawBitmap(mLastDrawBitmap, 0, 0, null);
 
-        // パスを描画します。
+        // パスを描画する
         canvas.drawPath(path, mPaint);
 
-        // ロックを外します。
+        // ロックを外す
         mHolder.unlockCanvasAndPost(canvas);
     }
 
+    // 選択された画像のビットマップを描画する
     public void drawPicture(Canvas canvas) {
         mPictureBitmap = Bitmap.createScaledBitmap(mPictureBitmap, 1050, 1500, false);
         canvas.drawBitmap(mLastDrawBitmap, 0, 0, null);
         canvas.drawBitmap(mPictureBitmap, 0, 0, mPaint);
+        // Canvasに選択した画像を描画する
         mLastDrawCanvas.drawBitmap(mPictureBitmap, 0, 0, mPaint);
     }
 
+    // SubActivityから渡されたファイルパスからビットマップを作成する
     public void setPictureView(String filePath) {
         mPictureBitmap = BitmapFactory.decodeFile(filePath);
     }
@@ -169,28 +192,28 @@ public class DrawSurfaceView extends SurfaceView implements Callback {
             return;
         }
 
-        // undoスタックからパスを取り出し、redoスタックに格納します。
+        // undoスタックからパスを取り出し、redoスタックに格納する
         Path lastUndoPath = mUndoStack.removeLast();
         mRedoStack.addLast(lastUndoPath);
 
-        // ロックしてキャンバスを取得します。
+        // ロックしてキャンバスを取得する
         Canvas canvas = mHolder.lockCanvas();
 
-        // キャンバスをクリアします。
+        // キャンバスをクリアする
         canvas.drawColor(0, Mode.CLEAR);
 
-        // 描画状態を保持するBitmapをクリアします。
+        // 描画状態を保持するBitmapをクリアする
         clearLastDrawBitmap();
 
         drawPicture(canvas);
 
-        // パスを描画します。
+        // パスを描画する
         for (Path path : mUndoStack) {
             canvas.drawPath(path, mPaint);
             mLastDrawCanvas.drawPath(path, mPaint);
         }
 
-        // ロックを外します。
+        // ロックを外す
         mHolder.unlockCanvasAndPost(canvas);
 
 
@@ -201,20 +224,22 @@ public class DrawSurfaceView extends SurfaceView implements Callback {
             return;
         }
 
-        // redoスタックからパスを取り出し、undoスタックに格納します。
+        // redoスタックからパスを取り出し、undoスタックに格納する
         Path lastRedoPath = mRedoStack.removeLast();
         mUndoStack.addLast(lastRedoPath);
 
-        // パスを描画します。
+        // パスを描画する
         drawLine(lastRedoPath);
 
         mLastDrawCanvas.drawPath(lastRedoPath, mPaint);
     }
 
     public void reset() {
+        // undoとredoに保存されたデータをクリアする
         mUndoStack.clear();
         mRedoStack.clear();
 
+        // 描画状態を保持するBitmapをクリアする
         clearLastDrawBitmap();
 
         Canvas canvas = mHolder.lockCanvas();
