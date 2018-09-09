@@ -32,12 +32,14 @@
             android:layout_marginLeft="5dp" />
     </LinearLayout>
 
-    <Button
+    <ImageButton
         android:id="@+id/context_menu_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="right"
-        android:text="@string/main_menu" />
-
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:background="@null"
+        android:scaleType="fitCenter"
+        android:onClick="showPopup"
+        android:src="@drawable/option_menu_icon"
+        android:layout_gravity="right" />
 
 </LinearLayout>

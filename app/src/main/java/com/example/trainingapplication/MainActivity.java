@@ -6,16 +6,12 @@ import android.graphics.BitmapFactory;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.view.ContextMenu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.ListView;
-import android.view.ContextMenu.ContextMenuInfo;
-import android.view.View.OnClickListener;
+import android.widget.PopupMenu;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -25,7 +21,6 @@ public class MainActivity extends AppCompatActivity {
 
     private ListView mListView;
     private File[] mFiles;
-    private Button mMenuButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,10 +68,6 @@ public class MainActivity extends AppCompatActivity {
             ImageArrayAdapter adapter = new ImageArrayAdapter(this, R.layout.two_line_list_item, listItems);
             mListView.setAdapter(adapter);
 
-            mMenuButton = findViewById(R.id.context_menu_button);
-            // コンテキストメニューを生成
-            registerForContextMenu(mListView);
-
             // リストビューの項目が押されたときの処理
             mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
@@ -93,31 +84,28 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // コンテキストメニューの内容
-    @Override
-    public void onCreateContextMenu(ContextMenu menu, View view, ContextMenuInfo menuInfo) {
-        super.onCreateContextMenu(menu, view, menuInfo);
-        // メニュータイトルと、メニュー項目を設定
-        // メニュータイトルを設定
-        menu.setHeaderTitle(R.string.context_title);
-        // メニュー項目を設定。(第一引数:グループID、第二引数:アイテムID、第三引数:メニューの表示順、第四引数:メニューに表示する文言)
-        menu.add(0, R.id.delete_menu, 0, R.string.delete_menu);
-    }
+    // リストビュー用のメニューを作成
+    public void showPopup(View view) {
+        final PopupMenu popupMenu = new PopupMenu(this, view);
+        final MenuInflater inflater = popupMenu.getMenuInflater();
+        final int position = (Integer) view.getTag();
+        inflater.inflate(R.menu.main_activity_menu1, popupMenu.getMenu());
 
-    // コンテキストメニュー項目押下時の処理
-    public boolean onContextItemSelected(MenuItem item) {
-        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo)item.getMenuInfo();
-
-        switch (item.getItemId()) {
-            case R.id.delete_menu:
-                // 選択したファイルを削除
-                String selectedPhotoPath = mFiles[info.position].getPath();
-                File file = new File(selectedPhotoPath);
-                file.delete();
-                return true;
-                default:
-                    return super.onContextItemSelected(item);
-        }
+        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem menuItem) {
+                switch (menuItem.getItemId()) {
+                    case R.id.delete_menu:
+                        // 選択したファイルを削除
+                        String selectedPhotoPath = mFiles[position].getPath();
+                        File file = new File(selectedPhotoPath);
+                        file.delete();
+                        return true;
+                }
+                return false;
+            }
+        });
+        popupMenu.show();
     }
 
     /**

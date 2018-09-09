@@ -3,15 +3,18 @@ package com.example.trainingapplication;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
-import android.view.ContextMenu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 
 public class SubActivity extends FragmentActivity{
 
     private DrawSurfaceView mCanvasView;
+    private ImageButton mMenuButton;
     public Button mUndoBtn;
     public Button mRedoBtn;
     public Button mResetBtn;
@@ -32,6 +35,14 @@ public class SubActivity extends FragmentActivity{
         // DrawSurfaceViewにインテントから受け取ったファイルパスを引き渡す
         mCanvasView = (DrawSurfaceView)findViewById(R.id.canvasView);
         mCanvasView.setPictureView(mFilePath);
+
+        mMenuButton = (ImageButton) findViewById(R.id.sub_menu_button);
+        mMenuButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showPopup(view);
+            }
+        });
 
         // UNDOボタンを設定
         mUndoBtn = (Button) findViewById(R.id.undoBtn);
@@ -60,29 +71,26 @@ public class SubActivity extends FragmentActivity{
             }
         });
 
-        // コンテキストメニューを生成
-        registerForContextMenu(findViewById(R.id.sub_menu_button));
+
     }
 
-    // コンテキストメニューの内容を設定
-    @Override
-    public void onCreateContextMenu(ContextMenu menu, View view, ContextMenu.ContextMenuInfo menuInfo) {
-        super.onCreateContextMenu(menu, view, menuInfo);
+    public void showPopup(View view) {
+        final PopupMenu popupMenu = new PopupMenu(this, view);
+        final MenuInflater inflater = popupMenu.getMenuInflater();
+        inflater.inflate(R.menu.sub_activity_menu1, popupMenu.getMenu());
 
-        // メニュータイトルとメニュー項目を設定
-        menu.setHeaderTitle(R.string.context_title);
-        menu.add(0, R.id.save_menu, 0, R.string.save_menu);
-    }
-
-    // コンテキストメニュー項目押下時の処理
-    public boolean onContextItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.save_menu:
-                // 編集した画像を保存する
-                mCanvasView.saveToFile();
-                return true;
-            default:
-                return super.onContextItemSelected(item);
-        }
+        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem menuItem) {
+                switch (menuItem.getItemId()) {
+                    case R.id.save_menu:
+                        // 編集した画像を保存する
+                        mCanvasView.saveToFile();
+                        return true;
+                }
+                return false;
+            }
+        });
+        popupMenu.show();
     }
 }
